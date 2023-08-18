@@ -11,7 +11,7 @@ const obj = {
 
 async function onSubmitForm(e) {
   e.preventDefault();
-
+  cleanGallery(obj.gallery);
   const inputValue = obj.formInput.value;
 
   if (inputValue === '') {
@@ -38,6 +38,12 @@ function loadingImages(page, value) {
       photoCardTemplate(searchResults);
     }
   });
+}
+
+function cleanGallery(el) {
+  while (el.firstChild) {
+    el.firstChild.remove();
+  }
 }
 
 function photoCardTemplate(searchResults) {
