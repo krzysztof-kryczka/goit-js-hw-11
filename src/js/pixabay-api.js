@@ -3,7 +3,7 @@ import axios from 'axios';
 const API_KEY = '38878394-a369e9a7eb6d5533d1860e3f1';
 
 const API_BASE_URL = 'https://pixabay.com/api/';
-const pageLimit = 40;
+export const pageLimit = 40;
 
 const fetchImages = async (queryToFetch, pageToFetch) => {
   try {

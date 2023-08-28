@@ -1,31 +1,51 @@
-import { fetchImages } from './js/pixabay-api';
+import { fetchImages, pageLimit } from './js/pixabay-api';
 import { Notify } from 'notiflix/build/notiflix-notify-aio';
 import 'notiflix/dist/notiflix-3.2.6.min.css';
+import SimpleLightbox from 'simplelightbox';
+import 'simplelightbox/dist/simple-lightbox.min.css';
+import throttle from 'lodash.throttle';
 
 const obj = {
   form: document.querySelector('#search-form'),
   formInput: document.querySelector('#search-form [name="searchQuery"]'),
   gallery: document.querySelector('.gallery'),
-  loadMoreBtn: document.querySelector('load__more'),
+  loadMoreBtn: document.querySelector('.load__more'),
 };
+
+let gallerySimpleLightbox = new SimpleLightbox('.photo-card a', {
+  captions: true,
+  captionsData: 'alt',
+  captionDelay: 450,
+  scrollZoom: false,
+});
+
+let pageNumber = 1;
+let inputValue = null;
+let numberOfPage = 0;
 
 async function onSubmitForm(e) {
   e.preventDefault();
   cleanGallery(obj.gallery);
-  const inputValue = obj.formInput.value;
+  inputValue = obj.formInput.value;
 
   if (inputValue === '') {
     Notify.failure(`Enter, please, any value in the field.`);
     return false;
   }
 
-  loadingImages(1, inputValue);
+  loadingImages(pageNumber, inputValue);
+  e.currentTarget.reset();
 }
 
 function loadingImages(page, value) {
   fetchImages(value, page).then(data => {
     console.log(data);
     const searchResults = data.hits;
+    numberOfPage = Math.ceil(data.totalHits / pageLimit);
+
+    console.log(`numberOfPage = ${numberOfPage}`);
+    console.log(`data.totalHits = ${data.totalHits}`);
+
     if (data.totalHits === 0) {
       Notify.failure(
         'Sorry, there are no images matching your search query. Please try again.'
@@ -36,8 +56,43 @@ function loadingImages(page, value) {
     if (data.totalHits !== 0) {
       Notify.success(`Hooray! We found ${data.totalHits} images.`);
       photoCardTemplate(searchResults);
+      gallerySimpleLightbox.refresh();
+    }
+
+    if (data.totalHits > pageLimit) {
+      obj.loadMoreBtn.classList.remove('is-hidden');
+      window.addEventListener('click', onInfiniteScroll);
+      window.addEventListener('scroll', throttle(onInfiniteScroll, 2000));
     }
   });
+}
+
+function onInfiniteScroll() {
+  if (window.innerHeight + window.scrollY >= document.body.scrollHeight) {
+    loadMorePhotos();
+  }
+}
+
+function loadMorePhotos() {
+  pageNumber += 1;
+  console.log(`Current pageNumber is: ${pageNumber}`);
+  if (pageNumber >= numberOfPage) {
+    obj.loadMoreBtn.classList.add('is-hidden');
+    Notify.info("We're sorry, but you've reached the end of search results.");
+    obj.loadMoreBtn.removeEventListener('click', onInfiniteScroll);
+    window.removeEventListener('scroll', onInfiniteScroll);
+    return;
+  } else {
+    fetchImages(inputValue, pageNumber)
+      .then(data => {
+        const searchResults = data.hits;
+        photoCardTemplate(searchResults);
+        gallerySimpleLightbox.refresh();
+      })
+      .catch(error => {
+        console.error(error);
+      });
+  }
 }
 
 function cleanGallery(el) {
