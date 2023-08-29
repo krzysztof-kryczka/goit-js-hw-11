@@ -12,3 +12,21 @@ img {
 .is-hidden {
   display: none;
 }
+
+.scroll__top {
+  position: fixed;
+  width: 54px;
+  height: 54px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  bottom: 30px;
+  right: 30px;
+  text-decoration: none;
+  color: #fff;
+  background-color: #3e56b2f2;
+  border-radius: 50%;
+  font-size: 35px;
+  cursor: pointer;
+  transition: all 350ms ease-in-out;
+}

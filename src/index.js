@@ -11,6 +11,7 @@ const obj = {
   formInput: document.querySelector('#search-form [name="searchQuery"]'),
   gallery: document.querySelector('.gallery'),
   loadMoreBtn: document.querySelector('.load__more'),
+  scrollToTop: document.querySelector('.scroll__top'),
 };
 
 let gallerySimpleLightbox = new SimpleLightbox('.photo-card a', {
@@ -161,4 +162,12 @@ function onFetchError(error) {
   });
 }
 
+function onTopScroll() {
+  window.scrollTo({
+    top: 0,
+    behavior: 'smooth',
+  });
+}
+
 obj.form.addEventListener('submit', onSubmitForm);
+obj.scrollToTop.addEventListener('click', onTopScroll);
