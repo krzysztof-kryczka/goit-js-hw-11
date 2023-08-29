@@ -1,5 +1,6 @@
 import { fetchImages, pageLimit } from './js/pixabay-api';
 import { Notify } from 'notiflix/build/notiflix-notify-aio';
+import { Loading } from 'notiflix/build/notiflix-loading-aio';
 import 'notiflix/dist/notiflix-3.2.6.min.css';
 import SimpleLightbox from 'simplelightbox';
 import 'simplelightbox/dist/simple-lightbox.min.css';
@@ -43,6 +44,7 @@ async function onSubmitForm(e) {
 
 async function loadingImages(page, value) {
   try {
+    Loading.hourglass('Loading data, please wait...');
     await fetchImages(value, page).then(data => {
       console.log(data);
       const searchResults = data.hits;
@@ -73,6 +75,7 @@ async function loadingImages(page, value) {
   } catch {
     onFetchError;
   }
+  Loading.remove();
 }
 
 function onInfiniteScroll() {
@@ -89,6 +92,7 @@ async function loadMorePhotos() {
     window.removeEventListener('scroll', onInfiniteScroll);
     return;
   } else {
+    Loading.hourglass('Loading data, please wait...');
     pageNumber += 1;
     console.log(`Current pageNumber is: ${pageNumber}`);
     await fetchImages(inputValue, pageNumber)
@@ -98,6 +102,7 @@ async function loadMorePhotos() {
         gallerySimpleLightbox.refresh();
       })
       .catch(onFetchError);
+    Loading.remove();
   }
 }
 
