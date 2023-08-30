@@ -10,7 +10,6 @@ const obj = {
   form: document.querySelector('#search-form'),
   formInput: document.querySelector('#search-form [name="searchQuery"]'),
   gallery: document.querySelector('.gallery'),
-  loadMoreBtn: document.querySelector('.load__more'),
   scrollToTop: document.querySelector('.scroll__top'),
 };
 
@@ -27,9 +26,9 @@ let numberOfPage = 0;
 
 async function onSubmitForm(e) {
   e.preventDefault();
+  pageNumber = 1;
   cleanGallery(obj.gallery);
   inputValue = obj.formInput.value;
-  obj.loadMoreBtn.classList.add('is-hidden');
 
   if (inputValue === '') {
     Notify.failure(`Enter, please, any value in the field.`);
@@ -46,33 +45,26 @@ async function onSubmitForm(e) {
 async function loadingImages(page, value) {
   try {
     Loading.hourglass('Loading data, please wait...');
-    await fetchImages(value, page).then(data => {
-      console.log(data);
-      const searchResults = data.hits;
-      numberOfPage = Math.ceil(data.totalHits / pageLimit);
+    const images = await fetchImages(value, page);
+    const searchResults = images.hits;
+    numberOfPage = Math.ceil(images.totalHits / pageLimit);
 
-      console.log(`numberOfPage = ${numberOfPage}`);
-      console.log(`data.totalHits = ${data.totalHits}`);
+    if (images.totalHits === 0) {
+      Notify.failure(
+        'Sorry, there are no images matching your search query. Please try again.'
+      );
+      return;
+    }
 
-      if (data.totalHits === 0) {
-        Notify.failure(
-          'Sorry, there are no images matching your search query. Please try again.'
-        );
-        return;
-      }
+    if (images.totalHits !== 0) {
+      Notify.success(`Hooray! We found ${images.totalHits} images.`);
+      photoCardTemplate(searchResults);
+      gallerySimpleLightbox.refresh();
+    }
 
-      if (data.totalHits !== 0) {
-        Notify.success(`Hooray! We found ${data.totalHits} images.`);
-        photoCardTemplate(searchResults);
-        gallerySimpleLightbox.refresh();
-      }
-
-      if (data.totalHits > pageLimit) {
-        obj.loadMoreBtn.classList.remove('is-hidden');
-        window.addEventListener('click', onInfiniteScroll);
-        window.addEventListener('scroll', throttle(onInfiniteScroll, 2000));
-      }
-    });
+    if (images.totalHits > pageLimit) {
+      window.addEventListener('scroll', throttle(onInfiniteScroll, 2000));
+    }
   } catch {
     onFetchError;
   }
@@ -87,22 +79,21 @@ function onInfiniteScroll() {
 
 async function loadMorePhotos() {
   if (pageNumber === numberOfPage) {
-    obj.loadMoreBtn.classList.add('is-hidden');
     Notify.info("We're sorry, but you've reached the end of search results.");
-    obj.loadMoreBtn.removeEventListener('click', onInfiniteScroll);
     window.removeEventListener('scroll', onInfiniteScroll);
     return;
   } else {
     Loading.hourglass('Loading data, please wait...');
     pageNumber += 1;
-    console.log(`Current pageNumber is: ${pageNumber}`);
-    await fetchImages(inputValue, pageNumber)
-      .then(data => {
-        const searchResults = data.hits;
-        photoCardTemplate(searchResults);
-        gallerySimpleLightbox.refresh();
-      })
-      .catch(onFetchError);
+
+    try {
+      const images = await fetchImages(inputValue, pageNumber);
+      const searchResults = images.hits;
+      photoCardTemplate(searchResults);
+      gallerySimpleLightbox.refresh();
+    } catch {
+      onFetchError;
+    }
     Loading.remove();
   }
 }

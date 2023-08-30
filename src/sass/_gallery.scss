@@ -2,13 +2,13 @@
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 25px;
+  gap: 30px;
   margin-top: 110px;
 }
 
 .photo-card {
-  width: 350px;
-  height: 285px;
+  width: 315px;
+  height: 275px;
   background-color: #ffffff;
   border: 5px solid #ffffff;
   border-bottom-right-radius: 10px;
@@ -33,31 +33,13 @@
   align-items: center;
   justify-items: center;
   display: flex;
+  font-size: 15px;
 
   &-item {
     flex-flow: column wrap;
     align-items: center;
-    padding: 0 12px;
+    padding: 0 9px;
     display: flex;
   }
 }
 
-.load__more {
-  width: 160px;
-  height: 40px;
-  cursor: pointer;
-  color: #000;
-  background-color: #13ce49;
-  border: none;
-  border-radius: 8px;
-  margin-top: 50px;
-  margin-bottom: 30px;
-  margin-left: 50%;
-  font-weight: 600;
-  transform: translate(-50%);
-
-  &:hover,
-  &:focus {
-    background-color: #5cdb81;
-  }
-}
